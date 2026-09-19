@@ -1,5 +1,5 @@
-const V = 'calpal-v1';
-const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const V = 'calpal-v2';
+const FILES = ['./', './index.html', './foods.json', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(FILES)));
@@ -17,7 +17,7 @@ self.addEventListener('message', e => {
   if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// stale-while-revalidate for same-origin files; fonts etc. pass through
+// stale-while-revalidate for same-origin files
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
