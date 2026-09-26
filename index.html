@@ -479,7 +479,7 @@ function vSet(){
       <option value="-500" ${sel(c.goal,-500)}>ירידה במשקל (‎-500 קק״ל)</option><option value="0" ${sel(c.goal,0)}>שמירה על המשקל</option><option value="300" ${sel(c.goal,300)}>עלייה במסה (‎+300 קק״ל)</option></select>
     <div class="res" id="calcout"></div><button class="btn gh press" data-act="applycalc">השתמש בתוצאה כיעדים</button></div></details></section>
   <section class="grp"><h3>המזונות שלי</h3><div class="ht">מזונות שיצרת בעצמך. הם מופיעים בחיפוש עם תווית ״שלי״.</div>
-    ${S.foods.length?S.foods.map(f=>`<div class="fdel"><div><div class="n">${esc(f.name)}</div><div class="d">${f.cal} קק״ל ל-100 ג׳</div></div>
+    ${S.foods.length?S.foods.map(f=>`<div class="fdel"><button class="press" data-act="editfood" data-id="${f.id}" style="flex:1;min-width:0;text-align:right"><div class="n">${esc(f.name)}</div><div class="d">${f.cal} קק״ל ל-100 ג׳</div></button>
       <button class="ib press" data-act="delfood" data-id="${f.id}" aria-label="מחק את ${esc(f.name)}">${ico('trash')}</button></div>`).join(''):'<div class="pad"><div class="hint" style="margin:0">עוד לא יצרת מזונות משלך. אפשר להוסיף דרך ״הוסף אוכל״ ואז ״מזון חדש״.</div></div>'}</section>
   <section class="grp"><h3>מקור הנתונים</h3><div class="pad" style="border-top:0"><div class="hint" style="margin-top:0">${DB.ready?`המאגר כולל <b>${DB.n.toLocaleString('he-IL')}</b> מזונות. מקור: ${esc(DB.src)}.`:'טוען את מאגר המזונות…'}
     הערכים הם ל-100 גרם, בדיוק כפי שפורסמו, ונבחרים לפי שם המזון המלא (למשל גולמי או מבושל, מותג מסוים). משקלי היחידות (ביצה, פרוסה, כף) מגיעים מאותו מאגר. מזון שיצרת בעצמך מסומן ״שלי״ והערכים שלו באחריותך.</div></div></section>
@@ -590,18 +590,21 @@ function renderSheet(){
       <button class="btn press" data-act="savemanual">${sh.editId?'שמור שינויים':'הוסף ליומן'}</button>
       ${sh.editId?'<button class="btn dg press" data-act="delent">מחק מהיומן</button>':''}</div>`;
   }else if(sh.view==='new'){
-    h=head('מזון חדש','ל'+mealName(sh.meal))+`<div class="fixd" style="padding-top:0">${modeSeg('new')}</div><div class="shb">
+    const ef=sh.editFood||{},sv=ef.sv||{};
+    h=(ef.id?head('עריכת מזון',esc(ef.name)):head('מזון חדש','ל'+mealName(sh.meal)))+
+      (ef.id?'':`<div class="fixd" style="padding-top:0">${modeSeg('new')}</div>`)+`<div class="shb">
       <div class="hint" style="margin-top:6px">הזן ערכים ל-100 גרם, כפי שכתוב בטבלת הערכים התזונתיים על האריזה.</div>
-      <span class="lab">שם</span><input class="inp" id="nn" placeholder="למשל: יוגורט חלבון של המותג שלי">
-      <div class="two"><div><span class="lab">קלוריות</span><input class="inp" id="nc" inputmode="decimal"></div>
-      <div><span class="lab">חלבון (ג׳)</span><input class="inp" id="np" inputmode="decimal"></div>
-      <div><span class="lab">פחמימות (ג׳)</span><input class="inp" id="nch" inputmode="decimal"></div>
-      <div><span class="lab">שומן (ג׳)</span><input class="inp" id="nf" inputmode="decimal"></div>
-      <div><span class="lab">סיבים (ג׳)</span><input class="inp" id="nfb" inputmode="decimal"></div><div></div>
-      <div><span class="lab">שם מנה (לא חובה)</span><input class="inp" id="nsl" placeholder="יחידה"></div>
-      <div><span class="lab">גרם במנה</span><input class="inp" id="nsg" inputmode="decimal"></div></div>
+      <span class="lab">שם</span><input class="inp" id="nn" placeholder="למשל: יוגורט חלבון של המותג שלי" value="${esc(ef.name||'')}">
+      <div class="two"><div><span class="lab">קלוריות</span><input class="inp" id="nc" inputmode="decimal" value="${ef.cal??''}"></div>
+      <div><span class="lab">חלבון (ג׳)</span><input class="inp" id="np" inputmode="decimal" value="${ef.p??''}"></div>
+      <div><span class="lab">פחמימות (ג׳)</span><input class="inp" id="nch" inputmode="decimal" value="${ef.c??''}"></div>
+      <div><span class="lab">שומן (ג׳)</span><input class="inp" id="nf" inputmode="decimal" value="${ef.f??''}"></div>
+      <div><span class="lab">סיבים (ג׳)</span><input class="inp" id="nfb" inputmode="decimal" value="${ef.fib??''}"></div><div></div>
+      <div><span class="lab">שם מנה (לא חובה)</span><input class="inp" id="nsl" placeholder="יחידה" value="${esc(sv.l||'')}"></div>
+      <div><span class="lab">גרם במנה</span><input class="inp" id="nsg" inputmode="decimal" value="${sv.g??''}"></div></div>
       <div class="hint" id="nh"></div>
-      <button class="btn press" data-act="savefood">שמור והמשך</button></div>`;
+      <button class="btn press" data-act="savefood">${ef.id?'שמור שינויים':'שמור והמשך'}</button>
+      ${ef.id?'<button class="btn dg press" data-act="delfood" data-id="'+ef.id+'" data-fromedit="1">מחק מזון זה</button>':''}</div>`;
   }
   el.innerHTML=h;
   if(sh.view==='search')fillList();
@@ -749,9 +752,21 @@ document.addEventListener('click',ev=>{
     case 'savefood':{
       const n=$('#nn').value.trim();if(!n){toast('הזן שם למזון');break;}
       const c=num($('#nc').value);if(!c&&!num($('#np').value)&&!num($('#nch').value)&&!num($('#nf').value)){toast('הזן ערכים תזונתיים');break;}
-      const f={id:'c'+uid(),name:n,cal:c,p:num($('#np').value),c:num($('#nch').value),f:num($('#nf').value),fib:num($('#nfb').value)};
-      const sg=num($('#nsg').value);if(sg)f.sv={l:$('#nsl').value.trim()||'מנה',g:sg};
-      S.foods.unshift(f);save();pickFood(normFood(f),sh.meal);break;
+      const vals={name:n,cal:c,p:num($('#np').value),c:num($('#nch').value),f:num($('#nf').value),fib:num($('#nfb').value)};
+      const sg=num($('#nsg').value);const sv=sg?{l:$('#nsl').value.trim()||'מנה',g:sg}:null;
+      if(sh.editFood&&sh.editFood.id){
+        const i=S.foods.findIndex(x=>x.id===sh.editFood.id);
+        if(i>=0){S.foods[i]={...S.foods[i],...vals,sv};save();}
+        closeSheet();render();toast('השינויים נשמרו');
+      }else{
+        const f={id:'c'+uid(),...vals};if(sv)f.sv=sv;
+        S.foods.unshift(f);save();pickFood(normFood(f),sh.meal);
+      }
+      break;
+    }
+    case 'editfood':{
+      const f=S.foods.find(x=>x.id===d.id);if(!f)break;
+      openSheet({view:'new',editFood:f});break;
     }
     case 'edit':{
       const {l,i}=findEntry(d.id);if(i<0)break;const e=l[i];
@@ -764,7 +779,7 @@ document.addEventListener('click',ev=>{
       break;
     }
     case 'delent':{const id=sh.editId;closeSheet();removeWithUndo(id,'הפריט נמחק');break;}
-    case 'delfood':if(confirm('למחוק את המזון מהרשימה שלי? פריטים שכבר נרשמו ביומן לא יימחקו.')){S.foods=S.foods.filter(f=>f.id!==d.id);S.recent=S.recent.filter(x=>x!==d.id);save();render();}break;
+    case 'delfood':if(confirm('למחוק את המזון מהרשימה שלי? פריטים שכבר נרשמו ביומן לא יימחקו.')){S.foods=S.foods.filter(f=>f.id!==d.id);S.recent=S.recent.filter(x=>x!==d.id);save();if(d.fromedit)closeSheet();render();}break;
     case 'applycalc':{const r=calcRes();S.goals={...S.goals,cal:r.cal,p:r.p,c:r.c,f:r.f};save();render();toast('היעדים עודכנו');break;}
     case 'export':{
       const blob=new Blob([JSON.stringify(S)],{type:'application/json'}),a2=document.createElement('a');

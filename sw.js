@@ -1,4 +1,4 @@
-const V = 'calpal-v2';
+const V = 'calpal-v3';
 const FILES = ['./', './index.html', './foods.json', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
